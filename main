@@ -1,0 +1,62 @@
+
+
+import numpy as np
+from sklearn.svm import SVR
+import matplotlib.pyplot as plt
+import pandas as pd 
+
+from selenium import webdriver
+from time import sleep
+import csv
+#Ngô Hoàng Ân - B1709524
+import pandas as pd
+from pandas import DataFrame
+
+brower = webdriver.Chrome(executable_path="chromedriver.exe")
+name = []
+price = []
+brower.get("https://www.binance.com/vi/markets")
+sleep(2)
+lic = brower.find_elements_by_xpath('//*[@id="__APP"]/div[1]/main/div/div[2]/div/div/div[1]/div/div/div/div[2]/div')[0].click()
+sleep(2)
+lists = brower.find_elements_by_class_name("css-1uly3p5")
+sleep(2)
+for item in lists:
+	sp = item.find_element_by_class_name("css-14yoi5o")
+	gia =  item.find_element_by_class_name("css-ydcgk2")
+	#print("*",sp.text," : ",gia.text)
+	name.append(sp.text)
+	price.append(gia.text.replace("$", "").replace(",",""))
+brower.quit()
+
+df = pd.read_csv("dulieu.csv")
+t = df['Time'][len(df)-1] + 5
+price.append(t)
+col = df.columns # lay name cua du lieu ( ten thuoc tinh)
+df2 = pd.DataFrame([price], columns=col)
+df_new = pd.concat([df, df2], ignore_index=True)
+df_new.to_csv("dulieu.csv", index=False)
+
+
+
+df = pd.read_csv("dulieu.csv", encoding='utf-8', sep=',')
+# #############################################################################
+
+y = df['BTC\nBitcoin']
+X = df[['ETH\nEthereum','BNB\nBNB','XLM\nStellar','ADA\nCardano','LTC\nLitecoin','UNI\nUniswap','XRP\nXRP']]
+x_train = X[:-1]
+y_train = y[:-1]
+x_test = X[-1:]
+y_test = y[-1:]
+#print(x_test)
+# #############################################################################
+
+#svr_rbf = SVR(kernel='rbf', C=100, gamma=0.1, epsilon=.1)
+#svr_lin = SVR(kernel='linear', C=100, gamma='auto')
+svr_poly = SVR(kernel='poly', C=100,coef0=1,epsilon=.1)#, gamma='auto', degree=3, epsilon=.1,coef0=1)
+print('-----')
+model = svr_poly.fit(x_train,y_train)
+print(model.intercept_)
+print('-----')
+print(model.predict(x_test))
+print(y_test)
